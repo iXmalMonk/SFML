@@ -6,11 +6,13 @@ int main()
 {
 	RenderWindow window(VideoMode(1100, 925), "L_03");
 
-	Image image;
-	image.loadFromFile("github.jpg");
+	//Image image;
+	//image.loadFromFile("github.jpg");
+	//image.createMaskFromColor(Color(0, 0, 0));
 
 	Texture texture;
-	texture.loadFromImage(image);
+	//texture.loadFromImage(image);
+	texture.loadFromFile("github.jpg");
 
 	Sprite sprite;
 	sprite.setTexture(texture);
