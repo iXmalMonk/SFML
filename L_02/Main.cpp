@@ -19,30 +19,37 @@ int main()
 
 	Event event;
 
+	Clock clock;
+	float time;
+
 	while (window.isOpen())
 	{
+		time = clock.getElapsedTime().asMicroseconds();
+		clock.restart();
+		time /= 600;
+
 		while (window.pollEvent(event))
 			if (event.type == Event::Closed)
 				window.close();
 
 		if (Keyboard::isKeyPressed(Keyboard::W))
 		{
-			heroSprite.move(0, -0.1);
+			heroSprite.move(0, -0.1 * time);
 			heroSprite.setTextureRect(IntRect(0, 0, 64, 64));
 		}
 		if (Keyboard::isKeyPressed(Keyboard::S))
 		{
-			heroSprite.move(0, 0.1);
+			heroSprite.move(0, 0.1 * time);
 			heroSprite.setTextureRect(IntRect(0, 64*3, 64, 64));
 		}
 		if (Keyboard::isKeyPressed(Keyboard::A))
 		{
-			heroSprite.move(-0.1, 0);
+			heroSprite.move(-0.1 * time, 0);
 			heroSprite.setTextureRect(IntRect(0, 64*2, 64, 64));
 		}
 		if (Keyboard::isKeyPressed(Keyboard::D))
 		{
-			heroSprite.move(0.1, 0);
+			heroSprite.move(0.1 * time, 0);
 			heroSprite.setTextureRect(IntRect(0, 64, 64, 64));
 		}
 
