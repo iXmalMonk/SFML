@@ -22,6 +22,8 @@ int main()
 	Clock clock;
 	float time;
 
+	float currentFrame = 0;
+
 	while (window.isOpen())
 	{
 		time = clock.getElapsedTime().asMicroseconds();
@@ -32,25 +34,35 @@ int main()
 			if (event.type == Event::Closed)
 				window.close();
 
+		if (Keyboard::isKeyPressed(Keyboard::W) or
+			Keyboard::isKeyPressed(Keyboard::S) or
+			Keyboard::isKeyPressed(Keyboard::A) or
+			Keyboard::isKeyPressed(Keyboard::D))
+		{
+			currentFrame += 0.005 * time;
+			if (currentFrame > 4)
+				currentFrame = 0;
+		}
+
 		if (Keyboard::isKeyPressed(Keyboard::W))
 		{
+			heroSprite.setTextureRect(IntRect(64 * int(currentFrame), 0, 64, 64));
 			heroSprite.move(0, -0.1 * time);
-			heroSprite.setTextureRect(IntRect(0, 0, 64, 64));
 		}
 		if (Keyboard::isKeyPressed(Keyboard::S))
 		{
+			heroSprite.setTextureRect(IntRect(64 * int(currentFrame), 64*3, 64, 64));
 			heroSprite.move(0, 0.1 * time);
-			heroSprite.setTextureRect(IntRect(0, 64*3, 64, 64));
 		}
 		if (Keyboard::isKeyPressed(Keyboard::A))
 		{
+			heroSprite.setTextureRect(IntRect(64 * int(currentFrame), 64 * 2, 64, 64));
 			heroSprite.move(-0.1 * time, 0);
-			heroSprite.setTextureRect(IntRect(0, 64*2, 64, 64));
 		}
 		if (Keyboard::isKeyPressed(Keyboard::D))
 		{
+			heroSprite.setTextureRect(IntRect(64 * int(currentFrame), 64, 64, 64));
 			heroSprite.move(0.1 * time, 0);
-			heroSprite.setTextureRect(IntRect(0, 64, 64, 64));
 		}
 
 		if (Mouse::isButtonPressed(Mouse::Left))
