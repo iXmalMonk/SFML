@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <sstream>
+#include <iostream>
 
 #include "Map.h"
 #include "View.h"
@@ -14,7 +15,8 @@ class Player
 {
 private:
 	double x, y;
-	int w, h;
+	int w, h, health;
+	bool life;
 	double dx = 0, dy = 0, speed = 0;
 	int direction = 0, score = 0;
 
@@ -30,6 +32,9 @@ public:
 		this->y = y;
 		this->w = w;
 		this->h = h;
+
+		this->health = 100;
+		this->life = true;
 
 		this->file = file;
 
@@ -74,6 +79,16 @@ public:
 		return this->score;
 	}
 
+	int getHealth()
+	{
+		return this->health;
+	}
+
+	bool getLife()
+	{
+		return this->life;
+	}
+
 	void update(float time)
 	{
 		switch (this->direction)
@@ -103,6 +118,12 @@ public:
 
 		this->sprite.setPosition(this->x, this->y);
 		this->interactionWithMap();
+
+		if (this->health <= 0)
+		{
+			this->life = false;
+			this->health = 0;
+		}
 	}
 
 	void interactionWithMap()
@@ -110,7 +131,7 @@ public:
 		for (int i = this->y / 32; i < (this->y + this->h) / 32; i++)
 			for (int j = this->x / 32; j < (this->x + this->w) / 32; j++)
 			{
-				if (TileMap[i][j] == '0')
+				if (TileMap[i][j] == 'b')
 				{
 					if (this->dx > 0)
 						this->x = j * 32 - this->w;
@@ -122,18 +143,21 @@ public:
 						this->y = i * 32 + 32;
 				}
 
-				if (TileMap[i][j] == '1')
+				if (TileMap[i][j] == 's')
 				{
-					//if (this->dx > 0)
-					//	this->x = j * 32 - this->w;
-					//if (this->dx < 0)
-					//	this->x = j * 32 + 32;
-					//if (this->dy > 0)
-					//	this->y = i * 32 - this->h;
-					//if (this->dy < 0)
-					//	this->y = i * 32 + 32;
-
 					this->score++;
+					TileMap[i][j] = ' ';
+				}
+
+				if (TileMap[i][j] == 'h')
+				{
+					this->health += 20;
+					TileMap[i][j] = ' ';
+				}
+
+				if (TileMap[i][j] == 'f')
+				{
+					this->health -= 40;
 					TileMap[i][j] = ' ';
 				}
 			}
@@ -148,8 +172,9 @@ int main()
 
 	Event event;
 	
-	Clock clock;
+	Clock clock, gameTimeClock;
 	float time = 0;
+	int gameTime = 0;
 
 	Player hero(600, 400, 64, 64, "hero.png");
 	float currentFrame = 0;
@@ -168,13 +193,20 @@ int main()
 	Font font;
 	font.loadFromFile("fonts/Samson.ttf");
 
-	Text text("", font, 32);
-	text.setFillColor(Color::Black);
-	text.setStyle(Text::Bold);
+	Text textStone("", font, 32), textHealth("", font, 32), textTime("", font, 32);
+	textStone.setFillColor(Color::Black);
+	textHealth.setFillColor(Color::Black);
+	textTime.setFillColor(Color::Black);
+	textStone.setStyle(Text::Bold);
+	textHealth.setStyle(Text::Bold);
+	textTime.setStyle(Text::Bold);
 
 	while (window.isOpen())
 	{
 		time = clock.getElapsedTime().asMicroseconds();
+
+		if (hero.getLife()) gameTime = gameTimeClock.getElapsedTime().asSeconds();
+
 		clock.restart();
 		time /= 600;
 
@@ -182,71 +214,83 @@ int main()
 			if (event.type == Event::Closed)
 				window.close();
 
-		if (Keyboard::isKeyPressed(Keyboard::W) or
-			Keyboard::isKeyPressed(Keyboard::S) or
-			Keyboard::isKeyPressed(Keyboard::A) or
-			Keyboard::isKeyPressed(Keyboard::D))
+		if (hero.getLife())
 		{
-			currentFrame += 0.005 * time;
-			if (currentFrame > maxFrame)
-				currentFrame = 0;
+			if (Keyboard::isKeyPressed(Keyboard::W) or
+				Keyboard::isKeyPressed(Keyboard::S) or
+				Keyboard::isKeyPressed(Keyboard::A) or
+				Keyboard::isKeyPressed(Keyboard::D))
+			{
+				currentFrame += 0.005 * time;
+				if (currentFrame > maxFrame)
+					currentFrame = 0;
+			}
+
+			if (Keyboard::isKeyPressed(Keyboard::W))
+			{
+				hero.setDirection(3);
+				hero.setSpeed(0.1);
+				hero.setTxtrRct(0, currentFrame);
+
+				hero.update(time);
+			}
+			if (Keyboard::isKeyPressed(Keyboard::S))
+			{
+				hero.setDirection(2);
+				hero.setSpeed(0.1);
+				hero.setTxtrRct(3, currentFrame);
+
+				hero.update(time);
+			}
+			if (Keyboard::isKeyPressed(Keyboard::A))
+			{
+				hero.setDirection(1);
+				hero.setSpeed(0.1);
+				hero.setTxtrRct(2, currentFrame);
+
+				hero.update(time);
+			}
+			if (Keyboard::isKeyPressed(Keyboard::D))
+			{
+				hero.setDirection(0);
+				hero.setSpeed(0.1);
+				hero.setTxtrRct(1, currentFrame);
+
+				hero.update(time);
+			}
+
+			getPlayerCoordinateForView(hero.getX(), hero.getY());
+			window.setView(view);
 		}
-
-		if (Keyboard::isKeyPressed(Keyboard::W))
-		{
-			hero.setDirection(3);
-			hero.setSpeed(0.1);
-			hero.setTxtrRct(0, currentFrame);
-
-			hero.update(time);
-		}
-		if (Keyboard::isKeyPressed(Keyboard::S))
-		{
-			hero.setDirection(2);
-			hero.setSpeed(0.1);
-			hero.setTxtrRct(3, currentFrame);
-
-			hero.update(time);
-		}
-		if (Keyboard::isKeyPressed(Keyboard::A))
-		{
-			hero.setDirection(1);
-			hero.setSpeed(0.1);
-			hero.setTxtrRct(2, currentFrame);
-
-			hero.update(time);
-		}
-		if (Keyboard::isKeyPressed(Keyboard::D))
-		{
-			hero.setDirection(0);
-			hero.setSpeed(0.1);
-			hero.setTxtrRct(1, currentFrame);
-
-			hero.update(time);
-		}
-
-		getPlayerCoordinateForView(hero.getX(), hero.getY());
-		window.setView(view);
-
 		window.clear();
 
 		for (int i = 0; i < HEIGHT_MAP; i++)
 			for (int j = 0; j < WIDTH_MAP; j++)
 			{
 				if (TileMap[i][j] == ' ') mapSprt.setTextureRect(IntRect(0, 0, 32, 32));
-				if (TileMap[i][j] == '1') mapSprt.setTextureRect(IntRect(32, 0, 32, 32));
-				if (TileMap[i][j] == '0') mapSprt.setTextureRect(IntRect(64, 0, 32, 32));
+				if (TileMap[i][j] == 's') mapSprt.setTextureRect(IntRect(32, 0, 32, 32));
+				if (TileMap[i][j] == 'b') mapSprt.setTextureRect(IntRect(32 * 2, 0, 32, 32));
+				if (TileMap[i][j] == 'h') mapSprt.setTextureRect(IntRect(32 * 3, 0, 32, 32));
+				if (TileMap[i][j] == 'f') mapSprt.setTextureRect(IntRect(32 * 4, 0, 32, 32));
 
 				mapSprt.setPosition(j * 32, i * 32);
 				window.draw(mapSprt);
 			}
 
-		ostringstream heroScoreStr;
+		ostringstream heroScoreStr, healthStr, gameTimeStr;
 		heroScoreStr << hero.getScore();
+		healthStr << hero.getHealth();
+		gameTimeStr << gameTime;
 
-		text.setString("Collected stones:" + heroScoreStr.str());
-		text.setPosition(view.getCenter().x - WIDTH_WIN / 2, view.getCenter().y - HEIGHT_WIN / 2);
-		window.draw(text);
+		textStone.setString("Collected stones:" + heroScoreStr.str());
+		textHealth.setString("Health:" + healthStr.str());
+		textTime.setString("Time:" + gameTimeStr.str());
+		textStone.setPosition(view.getCenter().x - WIDTH_WIN / 2, view.getCenter().y - HEIGHT_WIN / 2);
+		textHealth.setPosition(view.getCenter().x, view.getCenter().y - HEIGHT_WIN / 2);
+		textTime.setPosition(view.getCenter().x + WIDTH_WIN / 3, view.getCenter().y - HEIGHT_WIN / 2);
+		window.draw(textStone);
+		window.draw(textHealth);
+		window.draw(textTime);
 
 		window.draw(hero.getSprite());
 		window.display();
