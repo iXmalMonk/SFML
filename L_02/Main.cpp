@@ -41,7 +41,7 @@ public:
 		this->image.loadFromFile("images/" + this->file);
 		this->texture.loadFromImage(this->image);
 		this->sprite.setTexture(this->texture);
-		this->sprite.setTextureRect(IntRect(this->x, this->y, this->w, this->h));
+		this->sprite.setTextureRect(IntRect(0, 0, this->w, this->h));
 	}
 
 	void setDirection(int direction)
@@ -176,10 +176,9 @@ int main()
 	float time = 0;
 	int gameTime = 0;
 
-	Player hero(600, 400, 64, 64, "hero.png");
+	Player hero(600, 500, 64, 64, "hero.png");
 	float currentFrame = 0;
 	int maxFrame = 4;
-	hero.update(time);
 
 	// ------------------------------ MAP
 	Image mapImg;
@@ -226,7 +225,7 @@ int main()
 					currentFrame = 0;
 			}
 
-			if (Keyboard::isKeyPressed(Keyboard::W))
+			if (Keyboard::isKeyPressed(Keyboard::W) and !Keyboard::isKeyPressed(Keyboard::S))
 			{
 				hero.setDirection(3);
 				hero.setSpeed(0.1);
@@ -234,7 +233,7 @@ int main()
 
 				hero.update(time);
 			}
-			if (Keyboard::isKeyPressed(Keyboard::S))
+			if (Keyboard::isKeyPressed(Keyboard::S) and !Keyboard::isKeyPressed(Keyboard::W))
 			{
 				hero.setDirection(2);
 				hero.setSpeed(0.1);
@@ -242,7 +241,7 @@ int main()
 
 				hero.update(time);
 			}
-			if (Keyboard::isKeyPressed(Keyboard::A))
+			if (Keyboard::isKeyPressed(Keyboard::A) and !Keyboard::isKeyPressed(Keyboard::D))
 			{
 				hero.setDirection(1);
 				hero.setSpeed(0.1);
@@ -250,7 +249,7 @@ int main()
 
 				hero.update(time);
 			}
-			if (Keyboard::isKeyPressed(Keyboard::D))
+			if (Keyboard::isKeyPressed(Keyboard::D) and !Keyboard::isKeyPressed(Keyboard::A))
 			{
 				hero.setDirection(0);
 				hero.setSpeed(0.1);
@@ -262,6 +261,9 @@ int main()
 			getPlayerCoordinateForView(hero.getX(), hero.getY());
 			window.setView(view);
 		}
+
+		hero.update(time);
+
 		window.clear();
 
 		for (int i = 0; i < HEIGHT_MAP; i++)
