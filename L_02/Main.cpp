@@ -95,6 +95,38 @@ public:
 		this->speed = 0;
 
 		this->sprite.setPosition(this->x, this->y);
+		this->interactionWithMap();
+	}
+
+	void interactionWithMap()
+	{
+		for (int i = this->y / 32; i < (this->y + this->h) / 32; i++)
+			for (int j = this->x / 32; j < (this->x + this->w) / 32; j++)
+			{
+				if (TileMap[i][j] == '0')
+				{
+					if (this->dx > 0)
+						this->x = j * 32 - this->w;
+					if (this->dx < 0)
+						this->x = j * 32 + 32;
+					if (this->dy > 0)
+						this->y = i * 32 - this->h;
+					if (this->dy < 0)
+						this->y = i * 32 + 32;
+				}
+
+				if (TileMap[i][j] == '1')
+				{
+					if (this->dx > 0)
+						this->x = j * 32 - this->w;
+					if (this->dx < 0)
+						this->x = j * 32 + 32;
+					if (this->dy > 0)
+						this->y = i * 32 - this->h;
+					if (this->dy < 0)
+						this->y = i * 32 + 32;
+				}
+			}
 	}
 };
 
@@ -109,9 +141,10 @@ int main()
 	Clock clock;
 	float time = 0;
 
-	Player hero(0, 0, 64, 64, "hero.png");
+	Player hero(600, 400, 64, 64, "hero.png");
 	float currentFrame = 0;
 	int maxFrame = 4;
+	hero.update(time);
 
 	// ------------------------------ MAP
 	Image mapImg;
