@@ -1,21 +1,101 @@
 #include <SFML/Graphics.hpp>
 
+#include "map.h"
+
 using namespace sf;
+
+class Player
+{
+private:
+	double x, y;
+	int w, h;
+	double dx = 0, dy = 0, speed = 0;
+	int direction = 0;
+
+	String file;
+	Image image;
+	Texture texture;
+	Sprite sprite;
+
+public:
+	Player(double x, double y, int w, int h, String file)
+	{
+		this->x = x;
+		this->y = y;
+		this->w = w;
+		this->h = h;
+
+		this->file = file;
+
+		this->image.loadFromFile("images/" + this->file);
+		this->texture.loadFromImage(this->image);
+		this->sprite.setTexture(this->texture);
+		this->sprite.setTextureRect(IntRect(this->x, this->y, this->w, this->h));
+	}
+
+	void setDirection(int direction)
+	{
+		this->direction = direction;
+	}
+
+	void setSpeed(double speed)
+	{
+		this->speed = speed;
+	}
+
+	void setTxtrRct(int direction, float currentFrame)
+	{
+		this->sprite.setTextureRect(IntRect(this->w * int(currentFrame), this->w * direction, this->w, this->h));
+	}
+
+	Sprite getSprite()
+	{
+		return this->sprite;
+	}
+
+	void update(float time)
+	{
+		switch (this->direction)
+		{
+		case 0:
+			this->dx = this->speed;
+			this->dy = 0;
+			break;
+		case 1:
+			this->dx = -(this->speed);
+			this->dy = 0;
+			break;
+		case 2:
+			this->dx = 0;
+			this->dy = this->speed;
+			break;
+		case 3:
+			this->dx = 0;
+			this->dy = -(this->speed);
+			break;
+		}
+
+		this->x += this->dx * time;
+		this->y += this->dy * time;
+
+		this->speed = 0;
+
+		this->sprite.setPosition(this->x, this->y);
+	}
+};
 
 int main()
 {
 	RenderWindow window(VideoMode(1280, 720), "SFML");
+	
+	Player hero(0, 0, 64, 64, "hero.png");
 
-	Image heroImage;
-	heroImage.loadFromFile("images/hero.png");
-
-	Texture heroTexture;
-	heroTexture.loadFromImage(heroImage);
-
-	Sprite heroSprite;
-	heroSprite.setTexture(heroTexture);
-	heroSprite.setTextureRect(IntRect(0, 0, 64, 64));
-	heroSprite.setPosition(100, 100);
+	Image mapImg;
+	mapImg.loadFromFile("images/map.png");
+	Texture mapTxtr;
+	mapTxtr.loadFromImage(mapImg);
+	Sprite mapSprt;
+	mapSprt.setTexture(mapTxtr);
 
 	Event event;
 
@@ -46,32 +126,53 @@ int main()
 
 		if (Keyboard::isKeyPressed(Keyboard::W))
 		{
-			heroSprite.setTextureRect(IntRect(64 * int(currentFrame), 0, 64, 64));
-			heroSprite.move(0, -0.1 * time);
+			hero.setDirection(3);
+			hero.setSpeed(0.1);
+			hero.setTxtrRct(0, currentFrame);
+
+			hero.update(time);
 		}
 		if (Keyboard::isKeyPressed(Keyboard::S))
 		{
-			heroSprite.setTextureRect(IntRect(64 * int(currentFrame), 64*3, 64, 64));
-			heroSprite.move(0, 0.1 * time);
+			hero.setDirection(2);
+			hero.setSpeed(0.1);
+			hero.setTxtrRct(3, currentFrame);
+
+			hero.update(time);
 		}
 		if (Keyboard::isKeyPressed(Keyboard::A))
 		{
-			heroSprite.setTextureRect(IntRect(64 * int(currentFrame), 64 * 2, 64, 64));
-			heroSprite.move(-0.1 * time, 0);
+			hero.setDirection(1);
+			hero.setSpeed(0.1);
+			hero.setTxtrRct(2, currentFrame);
+
+			hero.update(time);
 		}
 		if (Keyboard::isKeyPressed(Keyboard::D))
 		{
-			heroSprite.setTextureRect(IntRect(64 * int(currentFrame), 64, 64, 64));
-			heroSprite.move(0.1 * time, 0);
-		}
+			hero.setDirection(0);
+			hero.setSpeed(0.1);
+			hero.setTxtrRct(1, currentFrame);
 
-		if (Mouse::isButtonPressed(Mouse::Left))
-			heroSprite.setColor(Color::Red);
-		else
-			heroSprite.setColor(Color::White);
+			hero.update(time);
+		}
+		
+		//hero.update(time);
 
 		window.clear();
-		window.draw(heroSprite);
+
+		for (int i = 0; i < HEIGHT_MAP; i++)
+			for (int j = 0; j < WIDTH_MAP; j++)
+			{
+				if (TileMap[i][j] == ' ') mapSprt.setTextureRect(IntRect(0, 0, 32, 32));
+				if (TileMap[i][j] == '1') mapSprt.setTextureRect(IntRect(32, 0, 32, 32));
+				if (TileMap[i][j] == '0') mapSprt.setTextureRect(IntRect(64, 0, 32, 32));
+
+				mapSprt.setPosition(j * 32, i * 32);
+				window.draw(mapSprt);
+			}
+
+		window.draw(hero.getSprite());
 		window.display();
 	}
 
