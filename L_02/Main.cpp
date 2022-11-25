@@ -1,8 +1,12 @@
 #include <SFML/Graphics.hpp>
 
-#include "map.h"
+#include "Map.h"
+#include "View.h"
 
 using namespace sf;
+
+#define WIDTH_WIN 640
+#define HEIGHT_WIN 480
 
 class Player
 {
@@ -53,6 +57,16 @@ public:
 		return this->sprite;
 	}
 
+	double getX()
+	{
+		return this->x;
+	}
+
+	double getY()
+	{
+		return this->y;
+	}
+
 	void update(float time)
 	{
 		switch (this->direction)
@@ -86,23 +100,27 @@ public:
 
 int main()
 {
-	RenderWindow window(VideoMode(1280, 720), "SFML");
-	
-	Player hero(0, 0, 64, 64, "hero.png");
+	RenderWindow window(VideoMode(WIDTH_WIN, HEIGHT_WIN), "SFML");
 
+	view.reset(FloatRect(0, 0, WIDTH_WIN, HEIGHT_WIN));
+
+	Event event;
+	
+	Clock clock;
+	float time = 0;
+
+	Player hero(0, 0, 64, 64, "hero.png");
+	float currentFrame = 0;
+	int maxFrame = 4;
+
+	// ------------------------------ MAP
 	Image mapImg;
 	mapImg.loadFromFile("images/map.png");
 	Texture mapTxtr;
 	mapTxtr.loadFromImage(mapImg);
 	Sprite mapSprt;
 	mapSprt.setTexture(mapTxtr);
-
-	Event event;
-
-	Clock clock;
-	float time;
-
-	float currentFrame = 0;
+	// ------------------------------ MAP
 
 	while (window.isOpen())
 	{
@@ -120,7 +138,7 @@ int main()
 			Keyboard::isKeyPressed(Keyboard::D))
 		{
 			currentFrame += 0.005 * time;
-			if (currentFrame > 4)
+			if (currentFrame > maxFrame)
 				currentFrame = 0;
 		}
 
@@ -156,8 +174,9 @@ int main()
 
 			hero.update(time);
 		}
-		
-		//hero.update(time);
+
+		getPlayerCoordinateForView(hero.getX(), hero.getY());
+		window.setView(view);
 
 		window.clear();
 
