@@ -1,9 +1,11 @@
 #include <SFML/Graphics.hpp>
+#include <sstream>
 
 #include "Map.h"
 #include "View.h"
 
 using namespace sf;
+using namespace std;
 
 #define WIDTH_WIN 640
 #define HEIGHT_WIN 480
@@ -14,7 +16,7 @@ private:
 	double x, y;
 	int w, h;
 	double dx = 0, dy = 0, speed = 0;
-	int direction = 0;
+	int direction = 0, score = 0;
 
 	String file;
 	Image image;
@@ -67,6 +69,11 @@ public:
 		return this->y;
 	}
 
+	int getScore()
+	{
+		return this->score;
+	}
+
 	void update(float time)
 	{
 		switch (this->direction)
@@ -117,14 +124,17 @@ public:
 
 				if (TileMap[i][j] == '1')
 				{
-					if (this->dx > 0)
-						this->x = j * 32 - this->w;
-					if (this->dx < 0)
-						this->x = j * 32 + 32;
-					if (this->dy > 0)
-						this->y = i * 32 - this->h;
-					if (this->dy < 0)
-						this->y = i * 32 + 32;
+					//if (this->dx > 0)
+					//	this->x = j * 32 - this->w;
+					//if (this->dx < 0)
+					//	this->x = j * 32 + 32;
+					//if (this->dy > 0)
+					//	this->y = i * 32 - this->h;
+					//if (this->dy < 0)
+					//	this->y = i * 32 + 32;
+
+					this->score++;
+					TileMap[i][j] = ' ';
 				}
 			}
 	}
@@ -154,6 +164,13 @@ int main()
 	Sprite mapSprt;
 	mapSprt.setTexture(mapTxtr);
 	// ------------------------------ MAP
+
+	Font font;
+	font.loadFromFile("fonts/Samson.ttf");
+
+	Text text("", font, 32);
+	text.setFillColor(Color::Black);
+	text.setStyle(Text::Bold);
 
 	while (window.isOpen())
 	{
@@ -223,6 +240,13 @@ int main()
 				mapSprt.setPosition(j * 32, i * 32);
 				window.draw(mapSprt);
 			}
+
+		ostringstream heroScoreStr;
+		heroScoreStr << hero.getScore();
+
+		text.setString("Collected stones:" + heroScoreStr.str());
+		text.setPosition(view.getCenter().x - WIDTH_WIN / 2, view.getCenter().y - HEIGHT_WIN / 2);
+		window.draw(text);
 
 		window.draw(hero.getSprite());
 		window.display();
